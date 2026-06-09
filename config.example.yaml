@@ -1,0 +1,10 @@
+# Example configuration for go-http-template.
+# Copy to config.yaml and adjust. Values in ${VAR} are expanded from
+# environment variables at load time.
+
+listenAddr: "${LISTEN_ADDR:-:8080}"
+logLevel: "${LOG_LEVEL:-info}"
+
+http:
+  readTimeoutSecs: 15
+  writeTimeoutSecs: 15

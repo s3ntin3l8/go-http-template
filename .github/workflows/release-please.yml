@@ -1,0 +1,20 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    uses: s3ntin3l8/.github/.github/workflows/release-please.yml@main
+
+  build-docker:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    uses: s3ntin3l8/.github/.github/workflows/docker-publish.yml@main
+    with:
+      image-name: "s3ntin3l8/${{ github.event.repository.name }}"
+      push-release: true
+      release-tag: ${{ needs.release-please.outputs.tag_name }}
+    secrets: inherit

@@ -1,0 +1,15 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "37 1 * * 4"
+
+jobs:
+  analyze:
+    uses: s3ntin3l8/.github/.github/workflows/codeql.yml@main
+    with:
+      languages: '"go"'
