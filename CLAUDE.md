@@ -62,6 +62,10 @@ fails at startup. `build-docker` needs `contents: read` + `packages: write` +
 -race with coverage, and govulncheck. The `pre-build-commands` input is available
 for project-specific setup (most commonly stubbing `//go:embed` assets).
 
+> **Codecov TODO:** coverage upload requires a `CODECOV_TOKEN` repo secret and the
+> repo onboarded on [codecov.io](https://about.codecov.io/) before results/badges
+> show. The workflow runs the upload unconditionally; it just no-ops without the token.
+
 ## Conventions
 
 - **Go 1.26+, stdlib-first.** `net/http` router, no framework dependency.
