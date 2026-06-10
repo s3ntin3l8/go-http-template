@@ -1,18 +1,22 @@
+version: "2"
+
 run:
   timeout: 5m
 
 linters:
   enable:
-    - govet
     - errcheck
+    - govet
+    - ineffassign
+    - misspell
     - staticcheck
     - unused
-    - gosimple
-    - ineffassign
-    - typecheck
-    - misspell
-    - goimports
 
-linters-settings:
-  goimports:
-    local-prefixes: github.com/s3ntin3l8/go-http-template
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/s3ntin3l8/go-http-template

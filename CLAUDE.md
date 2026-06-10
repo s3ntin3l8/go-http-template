@@ -36,6 +36,11 @@ or developer working in a repo created from this template, read this first.
 - `config.example.yaml` — reference config with `${VAR}` placeholders.
 - `Dockerfile` — multi-stage build → distroless non-root runtime with HEALTHCHECK.
 - `.github/workflows/` — thin callers of the reusable workflows in `s3ntin3l8/.github`.
+- `.editorconfig` — shared editor settings (LF, UTF-8, final newline; tabs for Go).
+- `.claude/` — `settings.json` + `hooks/session-start.sh`: a SessionStart hook that
+  installs Go deps and tooling (pre-commit, golangci-lint, govulncheck) so
+  [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
+  sessions can build, test, and lint. Runs only in the remote env.
 
 ## CI/CD — uses centralized reusable workflows
 
@@ -45,8 +50,11 @@ Workflows here are **callers** of `s3ntin3l8/.github/.github/workflows/*.yml@mai
 
 **The #1 thing to get right:** a caller job that invokes a reusable workflow needing
 write scopes **must declare a `permissions:` block** — the default `GITHUB_TOKEN`
-is read-only and the run otherwise fails at startup with zero jobs. `build-docker`
-needs `contents: read` + `packages: write`; `codeql` needs `security-events: write`;
+is read-only and the run otherwise fails at startup with zero jobs. The caller's
+grant must cover **every** scope the reusable workflow's jobs declare, or the run
+fails at startup. `build-docker` needs `contents: read` + `packages: write` +
+`id-token: write` (the last for keyless image signing); `codeql` needs
+`security-events: write`;
 `release-please` needs `contents: write` + `pull-requests: write`. See the
 `s3ntin3l8/.github` README for the full table.
 
@@ -56,7 +64,7 @@ for project-specific setup (most commonly stubbing `//go:embed` assets).
 
 ## Conventions
 
-- **Go 1.24+, stdlib-first.** `net/http` router, no framework dependency.
+- **Go 1.26+, stdlib-first.** `net/http` router, no framework dependency.
 - **Conventional Commits** — Release Please cuts versions/changelogs from them.
 - **Linting enforced** by golangci-lint and go vet (config in `.pre-commit-config.yaml`);
   run `make lint` before pushing (the pre-push hook runs govulncheck).

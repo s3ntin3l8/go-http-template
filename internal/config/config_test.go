@@ -62,8 +62,7 @@ http:
 }
 
 func TestExpandEnv(t *testing.T) {
-	os.Setenv("TEST_PORT", ":7070")
-	defer os.Unsetenv("TEST_PORT")
+	t.Setenv("TEST_PORT", ":7070")
 
 	result := expandEnv("listenAddr: ${TEST_PORT}")
 	if result != "listenAddr: :7070" {
