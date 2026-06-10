@@ -12,8 +12,8 @@ import (
 var envVarRe = regexp.MustCompile(`\$\{([^}]+)\}`)
 
 type Config struct {
-	ListenAddr string   `yaml:"listenAddr"`
-	LogLevel   string   `yaml:"logLevel"`
+	ListenAddr string     `yaml:"listenAddr"`
+	LogLevel   string     `yaml:"logLevel"`
 	HTTP       HTTPConfig `yaml:"http"`
 }
 
