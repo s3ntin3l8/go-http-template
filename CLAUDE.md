@@ -56,7 +56,7 @@ for project-specific setup (most commonly stubbing `//go:embed` assets).
 
 ## Conventions
 
-- **Go 1.24+, stdlib-first.** `net/http` router, no framework dependency.
+- **Go 1.25+, stdlib-first.** `net/http` router, no framework dependency.
 - **Conventional Commits** — Release Please cuts versions/changelogs from them.
 - **Linting enforced** by golangci-lint and go vet (config in `.pre-commit-config.yaml`);
   run `make lint` before pushing (the pre-push hook runs govulncheck).
