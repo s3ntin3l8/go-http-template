@@ -15,6 +15,9 @@ jobs:
 
   build-docker:
     needs: [test-go]
+    permissions:
+      contents: read
+      packages: write
     uses: s3ntin3l8/.github/.github/workflows/docker-publish.yml@main
     with:
       image-name: "s3ntin3l8/${{ github.event.repository.name }}"
