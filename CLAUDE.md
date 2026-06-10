@@ -50,8 +50,11 @@ Workflows here are **callers** of `s3ntin3l8/.github/.github/workflows/*.yml@mai
 
 **The #1 thing to get right:** a caller job that invokes a reusable workflow needing
 write scopes **must declare a `permissions:` block** — the default `GITHUB_TOKEN`
-is read-only and the run otherwise fails at startup with zero jobs. `build-docker`
-needs `contents: read` + `packages: write`; `codeql` needs `security-events: write`;
+is read-only and the run otherwise fails at startup with zero jobs. The caller's
+grant must cover **every** scope the reusable workflow's jobs declare, or the run
+fails at startup. `build-docker` needs `contents: read` + `packages: write` +
+`id-token: write` (the last for keyless image signing); `codeql` needs
+`security-events: write`;
 `release-please` needs `contents: write` + `pull-requests: write`. See the
 `s3ntin3l8/.github` README for the full table.
 

@@ -8,6 +8,8 @@ on:
 
 jobs:
   test-go:
+    permissions:
+      contents: read
     uses: s3ntin3l8/.github/.github/workflows/ci-go.yml@main
     with:
       coverage-fail-under: "0"
@@ -18,6 +20,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     uses: s3ntin3l8/.github/.github/workflows/docker-publish.yml@main
     with:
       image-name: "s3ntin3l8/${{ github.event.repository.name }}"
