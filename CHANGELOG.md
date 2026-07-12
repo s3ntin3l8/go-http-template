@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/s3ntin3l8/go-http-template/compare/v0.1.1...v0.1.2) (2026-07-12)
+
+
+### Bug Fixes
+
+* pin Go toolchain to 1.26.5 (crypto/tls ECH privacy leak) ([#5](https://github.com/s3ntin3l8/go-http-template/issues/5)) ([b7f046e](https://github.com/s3ntin3l8/go-http-template/commit/b7f046e4fdc059596d63b2bb15735b835ff24f41))
+
 ## [0.1.1](https://github.com/s3ntin3l8/go-http-template/compare/v0.1.0...v0.1.1) (2026-06-10)
 
 
