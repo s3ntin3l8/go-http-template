@@ -1,6 +1,6 @@
 module github.com/s3ntin3l8/go-http-template
 
-go 1.26.0
+go 1.26
 
 toolchain go1.26.5
 
