@@ -56,4 +56,4 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) to trigger vers
 
 ## License
 
-MIT
+AGPL-3.0
