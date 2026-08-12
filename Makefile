@@ -10,7 +10,7 @@ install-hooks: ## Install pre-commit hooks
 	pre-commit install --hook-type pre-push
 
 test: ## Run tests with race detector
-	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+	go test -race -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
 
 lint: ## Run pre-commit on all files
 	pre-commit run --all-files

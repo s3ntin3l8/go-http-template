@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,10 +15,14 @@ import (
 	"github.com/s3ntin3l8/go-http-template/internal/httpapi"
 )
 
+// version is stamped at build time via -ldflags "-X main.version=...";
+// defaults to "dev" for local builds (see Dockerfile).
+var version = "dev"
+
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config file")
 	addr := flag.String("addr", "", "override listen address (default from config)")
-	healthcheck := flag.Bool("healthcheck", false, "run health check and exit")
+	healthcheck := flag.Bool("healthcheck", false, "probe the local /health endpoint and exit (for container HEALTHCHECK)")
 	flag.Parse()
 
 	cfg, err := config.Load(*configPath)
@@ -28,52 +31,42 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *healthcheck {
-		listenAddr := cfg.ListenAddr
-		if *addr != "" {
-			listenAddr = *addr
-		}
-		client := &http.Client{Timeout: 5 * time.Second}
-		resp, err := client.Get("http://" + listenAddr + "/health")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "health check failed: %v\n", err)
-			os.Exit(1)
-		}
-		defer func() { _ = resp.Body.Close() }()
-		if resp.StatusCode != http.StatusOK {
-			fmt.Fprintf(os.Stderr, "health check returned status %d\n", resp.StatusCode)
-			os.Exit(1)
-		}
-		fmt.Println("healthy")
-		return
-	}
-
 	listenAddr := cfg.ListenAddr
 	if *addr != "" {
 		listenAddr = *addr
 	}
 	cfg.ListenAddr = listenAddr
 
+	if *healthcheck {
+		os.Exit(runHealthcheck(listenAddr))
+	}
+
+	slog.Info("starting server", "version", version, "addr", listenAddr)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	srv := httpapi.New(cfg)
 
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, os.Interrupt, syscall.SIGTERM)
-
 	go func() {
-		slog.Info("starting server", "addr", listenAddr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
-			os.Exit(1)
+			stop()
 		}
 	}()
 
-	<-done
+	<-ctx.Done()
 	slog.Info("shutting down")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Shut the HTTP server down first, then close any other resources
+	// (a DB pool, a worker pool, etc., if this template grows one) -- in
+	// that order, so nothing still accepting requests outlives what it
+	// depends on. ctx (the signal context) is already Done here, which is
+	// what such background work should watch to know it's time to stop.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("shutdown error", "error", err)
 		os.Exit(1)
 	}
