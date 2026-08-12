@@ -14,6 +14,8 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
 
   - repo: https://github.com/golangci/golangci-lint
     rev: v2.12.2
@@ -25,10 +27,13 @@ repos:
     hooks:
       - id: gofmt
         name: gofmt
-        entry: gofmt -l
+        # `gofmt -l` only LISTS unformatted files and exits 0 regardless --
+        # it never actually fails the hook. `test -z` on its output is what
+        # makes drift block a commit.
+        entry: bash -c 'test -z "$(gofmt -l $(git ls-files "*.go"))"'
         language: system
         types: [go]
-        pass_filenames: true
+        pass_filenames: false
 
       - id: go-vet
         name: go vet
@@ -39,7 +44,9 @@ repos:
 
       - id: go-mod-tidy
         name: go mod tidy (check)
-        entry: bash -c 'go mod tidy && git diff --exit-code go.mod go.sum'
+        # `-diff` reports without mutating go.mod/go.sum -- plain `go mod
+        # tidy` rewrites the working tree as a side effect of *checking*.
+        entry: bash -c 'go mod tidy -diff && git diff --exit-code go.mod go.sum'
         language: system
         types: [go]
         pass_filenames: false
@@ -55,7 +62,11 @@ repos:
 
       - id: govulncheck
         name: govulncheck
-        entry: bash -c 'which govulncheck 2>/dev/null && govulncheck ./... || echo "⚠ govulncheck not found — skipping"'
+        # Install to a repo-local GOBIN rather than `which govulncheck ||
+        # echo skipping` -- the old form silently no-ops (exit 0) on any
+        # machine that has never had it installed, which is every fresh
+        # clone.
+        entry: bash -c 'GOBIN="$(git rev-parse --show-toplevel)/.bin" go install golang.org/x/vuln/cmd/govulncheck@latest && "$(git rev-parse --show-toplevel)/.bin/govulncheck" ./...'
         language: system
         types: [go]
         pass_filenames: false
