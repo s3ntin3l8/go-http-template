@@ -6,7 +6,10 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
+RUN VERSION="$(sed -n 's/.*: *"\([0-9][^"]*\)".*/\1/p' .release-please-manifest.json)"; \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath \
+      -ldflags="-s -w -X main.version=${VERSION:-dev}" \
+      -o /out/server ./cmd/server
 
 # --- Stage 2: minimal runtime ---
 FROM gcr.io/distroless/static-debian12:nonroot
