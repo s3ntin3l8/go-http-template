@@ -21,10 +21,14 @@ func New(cfg config.Config) *http.Server {
 	)
 
 	return &http.Server{
-		Addr:         cfg.ListenAddr,
-		Handler:      handler,
-		ReadTimeout:  time.Duration(cfg.HTTP.ReadTimeoutSecs) * time.Second,
-		WriteTimeout: time.Duration(cfg.HTTP.WriteTimeoutSecs) * time.Second,
+		Addr:    cfg.ListenAddr,
+		Handler: handler,
+		// Guards against slowloris (a client that trickles headers in to
+		// hold a connection open) -- ReadTimeout alone doesn't cover the
+		// time before headers finish arriving.
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       time.Duration(cfg.HTTP.ReadTimeoutSecs) * time.Second,
+		WriteTimeout:      time.Duration(cfg.HTTP.WriteTimeoutSecs) * time.Second,
 	}
 }
 
@@ -61,7 +65,7 @@ func securityHeadersMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-XSS-Protection", "0")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'")
 		next.ServeHTTP(w, r)
 	})
 }
