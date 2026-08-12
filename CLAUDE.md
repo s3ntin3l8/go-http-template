@@ -29,18 +29,30 @@ or developer working in a repo created from this template, read this first.
 
 ## Layout
 
-- `cmd/server/main.go` — entrypoint: flag parsing, config loading, graceful shutdown.
-- `internal/config/` — YAML config loader with `${VAR}` environment expansion.
-- `internal/httpapi/` — `net/http` server setup: route mux, security headers,
-  panic recovery, request logging. `/health` endpoint.
-- `config.example.yaml` — reference config with `${VAR}` placeholders.
-- `Dockerfile` — multi-stage build → distroless non-root runtime with HEALTHCHECK.
-- `.github/workflows/` — thin callers of the reusable workflows in `s3ntin3l8/.github`.
-- `.editorconfig` — shared editor settings (LF, UTF-8, final newline; tabs for Go).
-- `.claude/` — `settings.json` + `hooks/session-start.sh`: a SessionStart hook that
-  installs Go deps and tooling (pre-commit, golangci-lint, govulncheck) so
-  [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
-  sessions can build, test, and lint. Runs only in the remote env.
+| Path | Responsibility |
+|---|---|
+| `cmd/server/main.go` | Entrypoint: flag parsing, config loading, `signal.NotifyContext`-driven graceful shutdown |
+| `cmd/server/health.go` | The `-healthcheck` self-probe used by the Dockerfile's `HEALTHCHECK` (normalizes a wildcard listen address like `0.0.0.0:8080` to a loopback URL before probing) |
+| `internal/config/` | YAML config loader with `${VAR}` environment expansion (no `:-default` support — see `config.example.yaml`'s comment) |
+| `internal/httpapi/` | `net/http` server setup: route mux, security headers, panic recovery, request logging, `/health` |
+| `config.example.yaml` | Reference config with `${VAR}` placeholders |
+| `Dockerfile` | Multi-stage build → distroless non-root runtime with `HEALTHCHECK`, version stamped via `-ldflags -X main.version=...` |
+| `.github/workflows/` | Thin callers of the reusable workflows in `s3ntin3l8/.github` |
+| `.editorconfig` | Shared editor settings (LF, UTF-8, final newline; tabs for Go) |
+| `.claude/` | `settings.json` + `hooks/session-start.sh`: a SessionStart hook that installs Go deps and tooling (pre-commit, golangci-lint, govulncheck) so [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web) sessions can build, test, and lint. Runs only in the remote env |
+
+## Key invariants
+
+Rules a change to this repo should not silently break, with the reasoning behind each — add to
+this list as the codebase grows past "starter template." It's intentionally short today:
+
+- **`config.example.yaml`'s values must be literal, not `${VAR:-default}`.** `expandEnv`
+  (`internal/config/config.go`) captures everything between `${` and `}` as one literal
+  environment-variable name; it does not parse a `:-default` separator. A value like
+  `"${LISTEN_ADDR:-:8080}"` therefore becomes the *literal string* `"${LISTEN_ADDR:-:8080}"`
+  whenever `LISTEN_ADDR` is unset, not the intended default — this was a real bug in this file
+  once. Use `${VAR}` only for values genuinely meant to be environment-driven, and match
+  `defaultConfig()`'s Go-side defaults for the example's literal values.
 
 ## CI/CD — uses centralized reusable workflows
 
@@ -75,3 +87,13 @@ for project-specific setup (most commonly stubbing `//go:embed` assets).
 - **Secrets:** never commit real credentials; `detect-secrets` runs in pre-commit
   and CI against `.secrets.baseline` (regenerate with
   `detect-secrets scan > .secrets.baseline` after vetting new detections).
+
+## Documentation map
+
+- `README.md` — setup and usage instructions for whatever you build from this template.
+- `CLAUDE.md` (this file) — the live contract for how the repo is wired: layout, invariants,
+  CI/CD conventions. Keep it in sync with the code, not with what the code used to do.
+
+Add real docs here as the project grows past what these two files can hold on their own (e.g. an
+API contract, an architecture decision log, an operational runbook) — this section exists so
+that pattern has an obvious place to start rather than being invented under time pressure later.
