@@ -51,3 +51,10 @@ compose.override.yml
 
 # Pre-commit
 .pre-commit-config.yaml.backup
+
+# Developer worktrees (per AGENTS.md make wt convention)
+.wt/
+
+# Agent workspace / superpowers plans scratch
+docs/superpowers/
+
