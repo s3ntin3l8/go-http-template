@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/s3ntin3l8/go-http-template/compare/v0.1.2...v0.1.3) (2026-09-11)
+
+
+### Bug Fixes
+
+* **lint:** build golangci-lint locally with GOTOOLCHAIN=go1.26.5 ([#9](https://github.com/s3ntin3l8/go-http-template/issues/9)) ([297f7be](https://github.com/s3ntin3l8/go-http-template/commit/297f7be2d56f76d9e2602211f1f8f2f061c84cb1))
+
 ## [0.1.2](https://github.com/s3ntin3l8/go-http-template/compare/v0.1.1...v0.1.2) (2026-07-12)
 
 
