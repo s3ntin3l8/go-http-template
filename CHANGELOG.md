@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/s3ntin3l8/go-http-template/compare/v0.1.3...v0.1.4) (2026-10-27)
+
+
+### Bug Fixes
+
+* **deps:** bump Go toolchain to 1.26.10 for stdlib vulnerabilities ([#14](https://github.com/s3ntin3l8/go-http-template/issues/14)) ([ed4910c](https://github.com/s3ntin3l8/go-http-template/commit/ed4910c3ee0a36b68c48f11b5dbfb4ce1bca20b9))
+
 ## [0.1.3](https://github.com/s3ntin3l8/go-http-template/compare/v0.1.2...v0.1.3) (2026-09-13)
 
 
